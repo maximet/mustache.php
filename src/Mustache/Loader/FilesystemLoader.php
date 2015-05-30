@@ -44,24 +44,24 @@ class Mustache_Loader_FilesystemLoader implements Mustache_Loader
      * @throws Mustache_Exception_RuntimeException if $baseDir does not exist.
      *
      * @param string $baseDir Base directory containing Mustache template files.
-     * @param array  $options Array of Loader options (default: array())
+     * @param array $options Array of Loader options (default: array())
      */
-    public function __construct($baseDir, array $options = array())
-    {
+    public function __construct($baseDir, array $options = array()) {
         $this->baseDir = $baseDir;
 
-        if (strpos($this->baseDir, '://') === false) {
+        if(strpos($this->baseDir, '://') === false) {
             $this->baseDir = realpath($this->baseDir);
         }
 
-        if (!is_dir($this->baseDir)) {
+        if(!is_dir($this->baseDir)) {
             throw new Mustache_Exception_RuntimeException(sprintf('FilesystemLoader baseDir must be a directory: %s', $baseDir));
         }
 
-        if (array_key_exists('extension', $options)) {
-            if (empty($options['extension'])) {
+        if(array_key_exists('extension', $options)) {
+            if(empty($options['extension'])) {
                 $this->extension = '';
-            } else {
+            }
+            else {
                 $this->extension = '.' . ltrim($options['extension'], '.');
             }
         }
@@ -77,9 +77,8 @@ class Mustache_Loader_FilesystemLoader implements Mustache_Loader
      *
      * @return string Mustache Template source
      */
-    public function load($name)
-    {
-        if (!isset($this->templates[$name])) {
+    public function load($name) {
+        if(!isset($this->templates[$name])) {
             $this->templates[$name] = $this->loadFile($name);
         }
 
@@ -95,32 +94,12 @@ class Mustache_Loader_FilesystemLoader implements Mustache_Loader
      *
      * @return string Mustache Template source
      */
-    protected function loadFile($name)
-    {
-        $fileName = $this->getFileName($name);
-
-        if (!file_exists($fileName)) {
+    protected function loadFile($name) {
+        if(!file_exists($name)) {
             throw new Mustache_Exception_UnknownTemplateException($name);
         }
 
-        return file_get_contents($fileName);
-    }
-
-    /**
-     * Helper function for getting a Mustache template file name.
-     *
-     * @param string $name
-     *
-     * @return string Template file name
-     */
-    protected function getFileName($name)
-    {
-        $fileName = $this->baseDir . '/' . $name;
-        if (substr($fileName, 0 - strlen($this->extension)) !== $this->extension) {
-            $fileName .= $this->extension;
-        }
-
-        return $fileName;
+        return file_get_contents($name);
     }
 
     /**
@@ -132,6 +111,10 @@ class Mustache_Loader_FilesystemLoader implements Mustache_Loader
      * @return string resolved name
      */
     public function resolveName($name, $parent) {
-        return Path::resolve($parent, $name);
+        $path = Path::resolve(($parent != null ? dirname($parent) : $this->baseDir), $name);
+        if(substr($path, 0 - strlen($this->extension)) !== $this->extension) {
+            $path .= $this->extension;
+        }
+        return $path;
     }
 }
