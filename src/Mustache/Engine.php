@@ -630,7 +630,6 @@ class Mustache_Engine
      */
     public function loadPartial($name, $parent)
     {
-        var_dump($parent);
         try {
             if (isset($this->partialsLoader)) {
                 $loader = $this->partialsLoader;
