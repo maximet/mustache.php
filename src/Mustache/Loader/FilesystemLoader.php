@@ -121,4 +121,16 @@ class Mustache_Loader_FilesystemLoader implements Mustache_Loader
 
         return $fileName;
     }
+
+    /**
+     * Resolve a template name
+     *
+     * @param string $name
+     * @param string $parent
+     *
+     * @return string resolved name
+     */
+    public function resolveName($name, $parent) {
+        return $name;
+    }
 }

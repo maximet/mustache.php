@@ -614,7 +614,8 @@ class Mustache_Engine
      */
     public function loadTemplate($name)
     {
-        return $this->loadSource($this->getLoader()->load($name));
+        $name = $this->getLoader()->resolveName($name, null);
+        return $this->loadSource($this->getLoader()->load($name), null, $name);
     }
 
     /**
@@ -627,8 +628,9 @@ class Mustache_Engine
      *
      * @return Mustache_Template
      */
-    public function loadPartial($name)
+    public function loadPartial($name, $parent)
     {
+        var_dump($parent);
         try {
             if (isset($this->partialsLoader)) {
                 $loader = $this->partialsLoader;
@@ -638,7 +640,9 @@ class Mustache_Engine
                 throw new Mustache_Exception_UnknownTemplateException($name);
             }
 
-            return $this->loadSource($loader->load($name));
+            $name = $loader->resolveName($name, $parent);
+
+            return $this->loadSource($loader->load($name), null, $name);
         } catch (Mustache_Exception_UnknownTemplateException $e) {
             // If the named partial cannot be found, log then return null.
             $this->log(
@@ -681,10 +685,11 @@ class Mustache_Engine
      *
      * @param string         $source
      * @param Mustache_Cache $cache  (default: null)
+     * @param string $parent  (default: null)
      *
      * @return Mustache_Template
      */
-    private function loadSource($source, Mustache_Cache $cache = null)
+    private function loadSource($source, Mustache_Cache $cache = null, $parent = null)
     {
         $className = $this->getTemplateClassName($source);
 
@@ -695,7 +700,7 @@ class Mustache_Engine
 
             if (!class_exists($className, false)) {
                 if (!$cache->load($className)) {
-                    $compiled = $this->compile($source);
+                    $compiled = $this->compile($source, $parent);
                     $cache->cache($className, $compiled);
                 }
             }
@@ -749,10 +754,11 @@ class Mustache_Engine
      * @see Mustache_Compiler::compile
      *
      * @param string $source
+     * @param string $parent (default: null)
      *
      * @return string generated Mustache template class code
      */
-    private function compile($source)
+    private function compile($source, $parent = null)
     {
         $tree = $this->parse($source);
         $name = $this->getTemplateClassName($source);
@@ -766,7 +772,7 @@ class Mustache_Engine
         $compiler = $this->getCompiler();
         $compiler->setPragmas($this->getPragmas());
 
-        return $compiler->compile($source, $tree, $name, isset($this->escape), $this->charset, $this->strictCallables, $this->entityFlags);
+        return $compiler->compile($source, $tree, $name, isset($this->escape), $this->charset, $this->strictCallables, $this->entityFlags, $parent);
     }
 
     /**

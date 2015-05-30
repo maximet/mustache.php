@@ -76,4 +76,16 @@ class Mustache_Loader_ArrayLoader implements Mustache_Loader, Mustache_Loader_Mu
     {
         $this->templates[$name] = $template;
     }
+
+    /**
+     * Resolve a template name
+     *
+     * @param string $name
+     * @param string $parent
+     *
+     * @return string resolved name
+     */
+    public function resolveName($name, $parent) {
+        return $name;
+    }
 }

@@ -26,6 +26,7 @@ class Mustache_Compiler
     private $entityFlags;
     private $charset;
     private $strictCallables;
+    private $parent;
 
     /**
      * Compile a Mustache token parse tree into PHP source code.
@@ -37,10 +38,11 @@ class Mustache_Compiler
      * @param string $charset         (default: 'UTF-8')
      * @param bool   $strictCallables (default: false)
      * @param int    $entityFlags     (default: ENT_COMPAT)
+     * @param string    $parent     (default: null)
      *
      * @return string Generated PHP source code
      */
-    public function compile($source, array $tree, $name, $customEscape = false, $charset = 'UTF-8', $strictCallables = false, $entityFlags = ENT_COMPAT)
+    public function compile($source, array $tree, $name, $customEscape = false, $charset = 'UTF-8', $strictCallables = false, $entityFlags = ENT_COMPAT, $parent = null)
     {
         $this->pragmas         = $this->defaultPragmas;
         $this->sections        = array();
@@ -50,6 +52,7 @@ class Mustache_Compiler
         $this->entityFlags     = $entityFlags;
         $this->charset         = $charset;
         $this->strictCallables = $strictCallables;
+        $this->parent = $parent;
 
         return $this->writeCode($tree, $name);
     }
@@ -117,7 +120,8 @@ class Mustache_Compiler
                     $code .= $this->partial(
                         $node[Mustache_Tokenizer::NAME],
                         isset($node[Mustache_Tokenizer::INDENT]) ? $node[Mustache_Tokenizer::INDENT] : '',
-                        $level
+                        $level,
+                        $this->parent
                     );
                     break;
 
@@ -392,7 +396,7 @@ class Mustache_Compiler
 
     const PARTIAL_INDENT = ', $indent . %s';
     const PARTIAL = '
-        if ($partial = $this->mustache->loadPartial(%s)) {
+        if ($partial = $this->mustache->loadPartial(%s, %s)) {
             $buffer .= $partial->renderInternal($context%s);
         }
     ';
@@ -406,7 +410,7 @@ class Mustache_Compiler
      *
      * @return string Generated partial call PHP source code
      */
-    private function partial($id, $indent, $level)
+    private function partial($id, $indent, $level, $parent)
     {
         if ($indent !== '') {
             $indentParam = sprintf(self::PARTIAL_INDENT, var_export($indent, true));
@@ -417,6 +421,7 @@ class Mustache_Compiler
         return sprintf(
             $this->prepare(self::PARTIAL, $level),
             var_export($id, true),
+            var_export($parent, true),
             $indentParam
         );
     }
