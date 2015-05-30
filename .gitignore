@@ -2,3 +2,5 @@
 composer.lock
 mustache.php
 vendor
+.idea
+*.iml
