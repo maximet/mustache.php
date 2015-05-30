@@ -1,4 +1,5 @@
 <?php
+use Weevers\Path\Path;
 
 /*
  * This file is part of Mustache.php.
@@ -131,6 +132,6 @@ class Mustache_Loader_FilesystemLoader implements Mustache_Loader
      * @return string resolved name
      */
     public function resolveName($name, $parent) {
-        return $name;
+        return Path::resolve($parent, $name);
     }
 }
